@@ -1,0 +1,154 @@
+<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><link rel="manifest" href="/manifest.webmanifest"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Mina Study AI V5</title><style>
+body{font-family:Arial,Tahoma;background:#f4f7fb;margin:0;color:#17202a}header{background:#17365d;color:#fff;padding:22px}
+main{max-width:1100px;margin:20px auto;padding:0 14px}.card{background:#fff;padding:18px;border-radius:15px;margin:14px 0;box-shadow:0 3px 12px #0001}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}input,select,textarea{width:100%;box-sizing:border-box;padding:10px;border:1px solid #ccd5df;border-radius:8px}textarea{min-height:120px}
+button{border:0;border-radius:9px;padding:10px 15px;font-weight:bold;cursor:pointer}.p{background:#17365d;color:white}.hidden{display:none}.msg{padding:10px;border-radius:9px;background:#fce4d6;margin:8px 0}
+table{width:100%;border-collapse:collapse}th,td{border:1px solid #ddd;padding:8px;text-align:center}th{background:#17365d;color:white}.chat{white-space:pre-wrap;min-height:180px;background:#fafcff;border:1px solid #ddd;padding:14px;border-radius:10px}
+nav{display:flex;gap:8px;flex-wrap:wrap;background:#fff;padding:12px;position:sticky;top:0;z-index:3}.muted{color:#65717e}
+</style></head><body><header><h1>🤖 Mina Study AI V5</h1><div>منصة دراسة ذكية لكل طالب</div></header>
+<main>
+<section id="auth"><div class="card"><h2 id="authTitle">تسجيل الدخول</h2><div id="authMsg"></div>
+<div id="signupFields" class="hidden"><label>الاسم</label><input id="name"><br><br></div>
+<label>البريد الإلكتروني</label><input id="email"><br><br><label>كلمة المرور</label><input id="password" type="password"><br><br>
+<button class="p" onclick="auth()">دخول</button> <button onclick="toggleSignup()">إنشاء حساب</button>
+<p class="muted">بعد التسجيل، الحساب ينتظر موافقة المسؤول لمدة قد تصل إلى يوم حسب إدارة الموقع.</p></div></section>
+
+<section id="app" class="hidden"><nav>
+<button onclick="show('home')">🏠 الرئيسية</button><button onclick="show('ai')">🤖 AI</button><button onclick="show('schedule')">📅 جدولي</button><button onclick="show('grades')">📊 درجاتي</button><button onclick="show('profile')">👤 ملفي</button><button onclick="toggleNotifications()">🔔 <span id="bellCount">0</span></button><button id="adminBtn" class="hidden" onclick="show('admin')">🛡️ الإدارة</button><button onclick="logout()">خروج</button>
+</nav>
+<div id="notificationPanel" class="card hidden" style="position:fixed;right:20px;top:70px;z-index:10;max-width:360px;width:calc(100% - 50px)"><h3>🔔 رسائلك</h3><div id="notifications"></div></div>
+<div id="home" class="card"><h2>أهلاً <span id="welcome"></span> 👋</h2>
+<p>ابدأ من AI لمساعدة في الدروس أو من جدولي لبناء يومك.</p>
+<div class="card"><h3>🧩 مش معاك ملف Excel؟</h3>
+<p>ولا يهمك. اضغط الزر، انسخ الـPrompt إلى ChatGPT، وأرسله له. ChatGPT سيطلب منك <b>رسالة واحدة فقط</b> فيها مواعيد الدروس والشغل والمهام طوال الأسبوع، ثم يرجع لك ملفًا منظمًا ترفعه هنا.</p>
+<button class="p" onclick="makeExcelPrompt()">📝 جهّز Prompt للجدول</button>
+<textarea id="excelPrompt" class="hidden"></textarea>
+<button id="copyExcelPrompt" class="hidden" onclick="copyExcelPrompt()">نسخ الـPrompt</button>
+</div>
+<div class="card" id="tutorial"><h2>🎓 ابدأ هنا — شرح سريع للطالب</h2>
+<p>المنصة بسيطة: <b>سجّل حسابك → انتظر موافقة المسؤول → جهّز جدولك → ارفعه → استخدم AI للمذاكرة.</b></p>
+<div class="grid">
+<div><h3>1️⃣ إنشاء الحساب</h3><p>اكتب اسمك وبريدك وكلمة المرور. الحساب لن يعمل إلا بعد موافقة المسؤول.</p></div>
+<div><h3>2️⃣ تجهيز جدولك</h3><p>استخدم قالب Excel العربي الجاهز، أو اطلب من ChatGPT إنشاء الجدول من مواعيدك.</p></div>
+<div><h3>3️⃣ رفع Excel</h3><p>ارفع ملف <b>XLSX</b> بالعناوين العربية. المنصة تتعرف على: اليوم، المادة/المهمة، وقت البداية، وقت النهاية، النوع.</p></div>
+<div><h3>4️⃣ استخدم AI</h3><p>اختر شرح درس، حل سؤال، اختبار، تحليل أخطاء، أدوات AI أو فيديوهات تعليمية.</p></div>
+</div>
+<div class="msg">💡 لا تكتب بيانات طالب آخر في ملفك. كل طالب يرى جدوله ودرجاته الخاصة فقط.</div></div>
+
+<div class="card"><h3>📥 رفع جدول Excel بالعربي</h3>
+<p class="muted">الصيغة المفضلة: <b>XLSX</b>. يمكنك استخدام قالبنا العربي الجاهز.</p>
+<a class="p" href="/api/plan-template" style="display:inline-block;text-decoration:none">⬇️ تحميل قالب Excel عربي</a>
+<input id="planFile" type="file" accept=".xlsx,.csv" style="margin-right:8px"><button class="p" onclick="importPlan()">رفع الجدول</button><span id="importStatus"></span>
+<div style="margin-top:12px"><b>العناوين المقبولة:</b> اليوم | المادة/المهمة | وقت البداية | وقت النهاية | النوع</div></div>
+</div>
+
+<div id="ai" class="card hidden"><h2>🤖 مساعد الدراسة + أدوات AI</h2>
+<div class="grid"><div><label>المادة</label><input id="sub"></div><div><label>نوع المساعدة</label><select id="kind"><option>شرح درس</option><option>مساعدة في حل سؤال</option><option>اختبار بدون إجابات</option><option>تحليل أخطاء</option><option>ترشيح أدوات AI للمذاكرة</option><option>ترشيح فيديوهات تعليمية</option><option>خطة مذاكرة</option></select></div></div><br>
+<textarea id="question" placeholder="اكتب مشكلتك... مثال: مش فاهم درس ..."></textarea><br><button class="p" onclick="ask()">اسأل AI</button>
+<div id="aistat" class="muted"></div><div id="answer" class="chat">الإجابة ستظهر هنا.</div></div>
+
+<div id="schedule" class="card hidden"><h2>📅 جدول الطالب</h2><div class="grid"><input id="day" placeholder="اليوم"><input id="title" placeholder="مثال: تاريخ"><input id="start" placeholder="7:00 مساءً"><input id="end" placeholder="9:00 مساءً"><select id="stype"><option>درس</option><option>شغل</option><option>مذاكرة</option><option>راحة</option></select></div><br><button class="p" onclick="addSchedule()">إضافة</button><div id="sched"></div></div>
+
+<div id="grades" class="card hidden"><h2>📊 درجاتي</h2><div class="grid"><input id="gsub" placeholder="المادة"><input id="score" type="number" placeholder="الدرجة"><input id="max" type="number" value="100"><input id="weak" placeholder="نقطة الضعف"></div><br><button class="p" onclick="addGrade()">حفظ</button><div id="glist"></div></div>
+
+<div id="profile" class="card hidden"><h2>👤 ملفي</h2><div class="grid"><input id="stage" placeholder="المرحلة"><input id="track" placeholder="الشعبة"><input id="location" placeholder="الدولة/المدينة اختياري"></div><br><textarea id="notes" placeholder="ملاحظات عن طريقة مذاكرتك"></textarea><br><button class="p" onclick="saveProfile()">حفظ</button></div>
+
+<div id="admin" class="card hidden"><h2>🛡️ لوحة تحكم المسؤول</h2>
+<p class="muted">من هنا توافق على الطلاب وتضيف/تزيل مسؤولين وتغيّر حالة الحسابات.</p>
+<h3>طلبات الانتظار</h3><div id="pending"></div>
+<h3>👥 إدارة المستخدمين والمسؤولين</h3><div id="allUsers"></div></div>
+</section><div class="muted" style="text-align:center;padding:20px">Mina Study AI V5 • Student Learning Platform</div></main>
+<script>
+let CSRF='';
+async function initCSRF(){let r=await fetch('/api/csrf');let d=await r.json();CSRF=d.token}
+async function apiPost(url,data,opts={}){opts.headers=Object.assign({'Content-Type':'application/json','X-CSRF-Token':CSRF},opts.headers||{});return fetch(url,Object.assign({method:'POST',body:JSON.stringify(data)},opts))}
+
+let signup=false; const $=x=>document.getElementById(x);
+function toggleSignup(){signup=!signup;$('signupFields').classList.toggle('hidden',!signup);$('authTitle').textContent=signup?'إنشاء حساب':'تسجيل الدخول';}
+async function post(url,data){let r=await apiPost(url,data);let d=await r.json();if(!r.ok)throw Error(d.error||'خطأ');return d}
+async function auth(){try{if(signup){let d=await post('/api/signup',{name:$('name').value,email:$('email').value,password:$('password').value});$('authMsg').innerHTML='<div class="msg">'+d.message+'</div>';return}
+let d=await post('/api/login',{email:$('email').value,password:$('password').value});enter(d)}catch(e){$('authMsg').innerHTML='<div class="msg">'+e.message+'</div>'}}
+function enter(d){$('auth').classList.add('hidden');$('app').classList.remove('hidden');$('welcome').textContent=d.name;if(d.role==='admin'){$('adminBtn').classList.remove('hidden');loadPending();loadUsers()}loadMe()}
+function show(id){document.querySelectorAll('#app>div.card').forEach(x=>x.classList.add('hidden'));$(id).classList.remove('hidden');if(id==='admin'){loadPending();loadUsers()}}
+async function logout(){await apiPost('/api/logout',{});location.reload()}
+async function loadMe(){let r=await fetch('/api/me');if(!r.ok)return;let d=await r.json();let p=d.profile||{};$('stage').value=p.stage||'';$('track').value=p.track||'';$('location').value=p.location||'';$('notes').value=p.notes||'';renderSched(d.schedules);renderGrades(d.grades)}
+async function saveProfile(){await post('/api/profile',{stage:$('stage').value,track:$('track').value,location:$('location').value,notes:$('notes').value});alert('تم حفظ الملف')}
+async function addSchedule(){await post('/api/schedule',{day:$('day').value,title:$('title').value,start:$('start').value,end:$('end').value,type:$('stype').value});loadMe()}
+async function addGrade(){await post('/api/grade',{subject:$('gsub').value,score:+$('score').value,max_score:+$('max').value,weak_point:$('weak').value});loadMe()}
+function renderSched(a){$('sched').innerHTML='<table><tr><th>اليوم</th><th>المادة/النشاط</th><th>البداية</th><th>النهاية</th><th>النوع</th></tr>'+a.map(x=>`<tr><td>${x.day}</td><td>${x.title}</td><td>${x.start}</td><td>${x.end}</td><td>${x.type}</td></tr>`).join('')+'</table>'}
+function renderGrades(a){$('glist').innerHTML='<table><tr><th>المادة</th><th>الدرجة</th><th>النسبة</th><th>نقطة الضعف</th></tr>'+a.map(x=>`<tr><td>${x.subject}</td><td>${x.score}/${x.max_score}</td><td>${Math.round(x.score/x.max_score*100)}%</td><td>${x.weak_point||'-'}</td></tr>`).join('')+'</table>'}
+async function ask(){ $('aistat').textContent='جاري التفكير...';try{let d=await post('/api/ai',{subject:$('sub').value,type:$('kind').value,message:$('question').value});$('answer').textContent=d.answer;$('aistat').textContent='تم';}catch(e){$('answer').textContent=e.message;$('aistat').textContent='';}}
+
+async function loadUsers(){
+  try{
+    let r=await fetch('/api/admin/users'); let d=await r.json();
+    $('allUsers').innerHTML='<table><tr><th>الاسم</th><th>الإيميل</th><th>الدور</th><th>الحالة</th><th>إجراءات</th></tr>'+
+      d.users.map(u=>`<tr><td>${u.name}</td><td>${u.email}</td><td>${u.role==='admin'?'🛡️ مسؤول':'🎓 طالب'}</td><td>${u.status}</td><td>
+      ${u.role==='admin'?`<button onclick="setRole(${u.id},'student')">إزالة مسؤول</button>`:`<button class="p" onclick="setRole(${u.id},'admin')">تعيين مسؤول</button>`}
+      ${u.status==='approved'?`<button onclick="setStatus(${u.id},'blocked')">حظر</button>`:`<button onclick="setStatus(${u.id},'approved')">تفعيل</button>`}
+      </td></tr>`).join('')+'</table>';
+  }catch(e){}
+}
+async function setRole(id,role){let r=await apiPost('/api/admin/set-role/'+id,{role});let d=await r.json();if(!r.ok)alert(d.error||'خطأ');loadUsers();loadPending()}
+async function setStatus(id,status){let r=await apiPost('/api/admin/set-status/'+id,{status});let d=await r.json();if(!r.ok)alert(d.error||'خطأ');loadUsers();loadPending()}
+async function loadPending(){try{let r=await fetch('/api/admin/pending');let d=await r.json();$('pending').innerHTML='<table><tr><th>الاسم</th><th>الإيميل</th><th>التاريخ</th><th>إجراء</th></tr>'+d.users.map(u=>`<tr><td>${u.name}</td><td>${u.email}</td><td>${u.created_at}</td><td><button class="p" onclick="approve(${u.id})">موافقة</button> <button onclick="reject(${u.id})">رفض</button></td></tr>`).join('')+'</table>'}catch(e){} loadUsers();}
+async function approve(id){await post('/api/admin/approve/'+id,{});loadPending()}
+async function reject(id){await post('/api/admin/reject/'+id,{});loadPending()}
+
+const motivation=[
+"🔥 خطوة صغيرة دلوقتي أحسن من تأجيل كبير لبعدين.",
+"💪 مش لازم تخلص كل حاجة مرة واحدة. خلّص الجزء اللي قدامك.",
+"🧠 لو الدرس صعب، قسّمه لسؤال صغير وابدأ منه.",
+"⏱️ 45 دقيقة تركيز حقيقي ممكن تعمل فرق كبير.",
+"🚀 أنت مش محتاج تكون مثالي؛ محتاج تستمر.",
+"📚 راجع نقطة واحدة قديمة النهارده، وهتتفاجئ إنك فاكر أكتر مما تتوقع.",
+"☕ خد نفس، اشرب مية، وابدأ أول 10 دقايق بس.",
+"🎯 ركّز في المهمة الحالية وسيب باقي اليوم بعدين.",
+"✨ كل جلسة مذاكرة هي استثمار في نفسك.",
+"🤖 استخدم الـAI كمدرس يساعدك تفهم، مش كبديل عن تفكيرك."
+];
+let notices=JSON.parse(localStorage.getItem('msa_notifications')||'[]');
+function addNotice(text){
+  notices.unshift({text,time:new Date().toLocaleTimeString('ar-EG',{hour:'numeric',minute:'2-digit'})});
+  notices=notices.slice(0,20); localStorage.setItem('msa_notifications',JSON.stringify(notices)); renderNotices();
+  if(Notification.permission==='granted') new Notification('Mina Study AI V5',{body:text});
+}
+function renderNotices(){
+  $('notifications').innerHTML=notices.length?notices.map(n=>`<div style="padding:10px;border-bottom:1px solid #eee"><b>${n.text}</b><br><small>${n.time}</small></div>`).join(''):'لا توجد رسائل بعد.';
+  $('bellCount').textContent=notices.length;
+}
+function toggleNotifications(){ $('notificationPanel').classList.toggle('hidden'); renderNotices(); }
+function startMotivation(){
+  renderNotices();
+  if('Notification' in window && Notification.permission==='default') Notification.requestPermission().catch(()=>{});
+  // First message after 90 minutes, then every 90 minutes while the page is open.
+  // Random timing variation (±15 min) prevents repetitive exact intervals.
+  function schedule(){
+    const delay=(75+Math.floor(Math.random()*31))*60*1000;
+    setTimeout(()=>{addNotice(motivation[Math.floor(Math.random()*motivation.length)]);schedule()},delay);
+  }
+  schedule();
+}
+
+
+function makeExcelPrompt(){
+const p=`أنت مساعد إعداد جدول دراسي. أريد منك أن تسألني سؤالًا واحدًا فقط في رسالة واحدة:
+"اكتب كل مواعيد دروسك، الشغل/التدريب، المهام، المواصلات، وأي التزامات ثابتة من السبت إلى الجمعة، مع وقت البداية والنهاية إن أمكن، واكتب أيضًا وقت النوم والصحيان."
+بعد أن أجيبك، لا تسألني أي سؤال إضافي. حوّل إجابتي إلى جدول أسبوعي منظم في ملف Excel (.xlsx) يحتوي على الأعمدة:
+اليوم | المادة/المهمة | وقت البداية | وقت النهاية | النوع
+استخدم نظام 12 ساعة بالعربية (صباحًا/ظهرًا/مساءً/منتصف الليل)، ولا تخترع أي موعد غير موجود. اجعل كل التزاماتي في صف مستقل، وأرسل لي ملف Excel جاهز للتحميل والرفع على منصة Mina Study AI V5.`;
+$('excelPrompt').classList.remove('hidden');$('copyExcelPrompt').classList.remove('hidden');$('excelPrompt').value=p;
+}
+async function copyExcelPrompt(){await navigator.clipboard.writeText($('excelPrompt').value);alert('تم نسخ الـPrompt. الصقه في ChatGPT.')}
+async function importPlan(){
+let f=$('planFile').files[0];if(!f){alert('اختر ملف XLSX أو CSV');return}
+let fd=new FormData();fd.append('file',f);
+let r=await fetch('/api/import-plan',{method:'POST',headers:{'X-CSRF-Token':CSRF},body:fd});let d=await r.json();
+$('importStatus').textContent=r.ok?` ${d.message||('تم استيراد '+d.imported+' عنصر')} ✅${d.skipped?' (تم تجاهل '+d.skipped+' صف فارغ)':''}`:` ${d.error||'خطأ'}`;
+if(r.ok)loadMe();
+}
+
+(async()=>{await initCSRF();let r=await fetch('/api/me');if(r.ok){let d=await r.json();enter({name:d.user.name,role:d.user.role})}})();
+</script></body></html>
+<script>if('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(()=>{});</script>
